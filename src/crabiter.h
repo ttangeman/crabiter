@@ -16,7 +16,6 @@ namespace crab {
     template<typename IterType> class Filter;
 
     template<typename ContainerType> class Iterator;
-    template<typename ContainerType> class IteratorMut;
     template<typename ContainerType> class IntoIterator;
 
     namespace detail {
@@ -47,26 +46,6 @@ namespace crab {
     private:
         ContainerType::const_iterator m_begin;
         ContainerType::const_iterator m_end;
-    };
-
-    template<typename ContainerType>
-    class IteratorMut {
-    public:
-        using ValueType = typename detail::IterTraits<IteratorMut<ContainerType>>::ValueType;
-
-        IteratorMut(ContainerType& container) 
-            : m_begin(container.begin()), m_end(container.end()) {}
-
-        Optional<ValueType&> next() {
-            if (m_begin != m_end) {     
-                return *m_begin++;
-            }
-            return {};
-        }    
-
-    private:
-        ContainerType::iterator m_begin;
-        ContainerType::iterator m_end;    
     };
 
     template<typename ContainerType>
@@ -165,13 +144,6 @@ namespace crab {
     template<typename ContainerType>
     Iterator<ContainerType> iter(ContainerType const& container) {
         return Iterator<ContainerType> {
-            container
-        };
-    }
-
-    template<typename ContainerType>
-    IteratorMut<ContainerType> iter_mut(ContainerType& container) {
-        return IteratorMut<ContainerType> {
             container
         };
     }
@@ -302,11 +274,6 @@ namespace crab {
     namespace detail {
         template<typename ContainerType>
         struct IterTraits<Iterator<ContainerType>> {
-            using ValueType = typename ContainerType::value_type;
-        };
-
-        template<typename ContainerType>
-        struct IterTraits<IteratorMut<ContainerType>> {
             using ValueType = typename ContainerType::value_type;
         };
 
