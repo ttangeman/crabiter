@@ -262,8 +262,10 @@ namespace crab {
         }    
 
     private:
-        bool m_has_value{false};    
+        // Using an array to avoid default constructing the T when the
+        // Optional is in an uninitialized state (m_has_value = false).
         alignas(T) uint8_t m_storage[sizeof(T)];
+        bool m_has_value{false};    
     };
 }
 
