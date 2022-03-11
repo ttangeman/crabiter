@@ -2,9 +2,10 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <functional>
 #include <iterator>
 #include <utility>
-#include <functional>
+#include <vector>
 
 // Forward declarations
 namespace crab {       
