@@ -128,10 +128,15 @@ namespace crab {
         }
 
         std::vector<ValueType> collect() {
-            std::vector<ValueType> result;
+            std::vector<ValueType> result;  
+            // TODO: Is this a worthwhile micro-optimization?     
+            result.reserve(1024);
+
             while (auto item = derive().next()) {
                 result.push_back(item.value());
             }
+
+            result.shrink_to_fit();
             return result;
         }
 
