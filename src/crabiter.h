@@ -49,7 +49,7 @@ namespace crab {
     };
 
     template<typename ContainerType>
-    class IntoIterator {
+    class IntoIterator : public Adapter<IntoIterator<ContainerType>> {
     public:
         using ValueType = typename detail::IterTraits<IntoIterator<ContainerType>>::ValueType;
 
@@ -129,7 +129,7 @@ namespace crab {
 
         std::vector<ValueType> collect() {
             std::vector<ValueType> result;
-            while (auto&& item = derive().next()) {
+            while (auto item = derive().next()) {
                 result.push_back(item.value());
             }
             return result;
