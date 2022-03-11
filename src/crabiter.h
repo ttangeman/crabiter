@@ -12,6 +12,7 @@ namespace crab {
     template<typename T> struct Optional;
 
     template<typename DerivedType> struct Adapter;
+    template<typename IterType> class Map;
     template<typename IterType> class Filter;
 
     template<typename ContainerType> class Iterator;
@@ -89,6 +90,27 @@ namespace crab {
     };
 
     template<typename IterType>
+    class Map : public Adapter<Map<IterType>> {
+    public:
+        using ValueType = typename IterType::ValueType;
+
+        Map(IterType iter, std::function<ValueType(ValueType const&)>&& functor) 
+            : m_iter(iter), map(std::move(functor)) {}
+
+        Optional<ValueType> next() {
+            if (auto item = m_iter.next()) {
+                return map(item.value());
+            } else {
+                return {};
+            }
+        }
+
+    private:
+        IterType m_iter;
+        std::function<ValueType(ValueType const&)> map;
+    };
+
+    template<typename IterType>
     class Filter : public Adapter<Filter<IterType>> {
     public:
         using ValueType = typename IterType::ValueType;
@@ -99,7 +121,7 @@ namespace crab {
         Optional<ValueType> next() {
             while (auto item = m_iter.next()) {
                 if (filter(item.value())) {
-                    return item;
+                    return std::move(item);
                 }
             }
             return {};
@@ -112,7 +134,13 @@ namespace crab {
 
     template<typename DerivedType>
     struct Adapter {
-        using ValueType = typename detail::IterTraits<DerivedType>::ValueType;
+        using ValueType = typename detail::IterTraits<DerivedType>::ValueType;        
+
+        Map<DerivedType> map(std::function<ValueType(ValueType const&)>&& functor) {
+            return Map<DerivedType> {
+                derive(), std::move(functor)
+            };
+        }
 
         Filter<DerivedType> filter(std::function<bool(ValueType const&)>&& functor) {
             return Filter<DerivedType> {
@@ -285,6 +313,11 @@ namespace crab {
         template<typename ContainerType>
         struct IterTraits<IntoIterator<ContainerType>> {
             using ValueType = typename ContainerType::value_type;
+        };
+
+        template<typename IterType>
+        struct IterTraits<Map<IterType>> {
+            using ValueType = typename IterTraits<IterType>::ValueType;
         };
 
         template<typename IterType>
