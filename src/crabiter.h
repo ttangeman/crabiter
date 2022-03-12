@@ -189,10 +189,9 @@ namespace crab {
             clear();
         }
 
-        Optional(Optional<T> const& other) {
-            clear();
-            m_has_value = other.has_value();
-
+        Optional(Optional<T> const& other) 
+            : m_has_value(other.has_value())
+        {
             if (other.has_value()) {        
                 new (&m_storage) T(other.value());
             }
@@ -208,10 +207,9 @@ namespace crab {
             return *this;
         }
 
-        Optional(Optional<T>&& other) {
-            clear();
-            m_has_value = other.has_value();
-
+        Optional(Optional<T>&& other) 
+            : m_has_value(other.has_value())
+        {
             if (other.has_value()) {        
                 new (&m_storage) T(other.take());
             }
@@ -221,7 +219,7 @@ namespace crab {
             clear();
             m_has_value = other.has_value();
 
-            if (other.has_value) {        
+            if (other.has_value()) {        
                 new (&m_storage) T(other.take());
             }
             return *this;
