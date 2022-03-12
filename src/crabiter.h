@@ -2,7 +2,6 @@
 
 #include <assert.h>
 #include <stdint.h>
-#include <functional>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -12,8 +11,8 @@ namespace crab {
     template<typename T> struct Optional;
 
     template<typename DerivedType> struct Adapter;
-    template<typename IterType> class Map;
-    template<typename IterType> class Filter;
+    template<typename IterType, typename Functor> class Map;
+    template<typename IterType, typename Functor> class Filter;
 
     template<typename ContainerType> class Iterator;
     template<typename ContainerType> class IntoIterator;
@@ -68,12 +67,12 @@ namespace crab {
         typename ContainerType::iterator m_end;
     };
 
-    template<typename IterType>
-    class Map : public Adapter<Map<IterType>> {
+    template<typename IterType, typename Functor>
+    class Map : public Adapter<Map<IterType, Functor>> {
     public:
         using ValueType = typename IterType::ValueType;
 
-        Map(IterType iter, std::function<ValueType(ValueType&&)>&& functor) 
+        Map(IterType iter, Functor&& functor) 
             : m_iter(iter), map(std::move(functor)) {}
 
         Optional<ValueType> next() {
@@ -86,15 +85,15 @@ namespace crab {
 
     private:
         IterType m_iter;
-        std::function<ValueType(ValueType&&)> map;
+        Functor map;
     };
 
-    template<typename IterType>
-    class Filter : public Adapter<Filter<IterType>> {
+    template<typename IterType, typename Functor>
+    class Filter : public Adapter<Filter<IterType, Functor>> {
     public:
         using ValueType = typename IterType::ValueType;
 
-        Filter(IterType iter, std::function<bool(ValueType const&)>&& functor) 
+        Filter(IterType iter, Functor&& functor) 
             : m_iter(iter), filter(std::move(functor)) {}
 
         Optional<ValueType> next() {
@@ -108,27 +107,29 @@ namespace crab {
 
     private:
         IterType m_iter;
-        std::function<bool(ValueType const&)> filter;
+        Functor filter;
     };
 
     template<typename DerivedType>
     struct Adapter {
         using ValueType = typename detail::IterTraits<DerivedType>::ValueType;        
 
-        Map<DerivedType> map(std::function<ValueType(ValueType&&)>&& functor) {
-            return Map<DerivedType> {
-                derive(), std::move(functor)
+        template<typename Functor>
+        Map<DerivedType, Functor> map(Functor&& functor) {
+            return Map {
+                derive(), std::forward<Functor>(functor)
             };
         }
 
-        Filter<DerivedType> filter(std::function<bool(ValueType const&)>&& functor) {
-            return Filter<DerivedType> {
-                derive(), std::move(functor)
+        template<typename Functor>
+        Filter<DerivedType, Functor> filter(Functor&& functor) {
+            return Filter {
+                derive(), std::forward<Functor>(functor)
             };
         }
 
-        template<typename F>
-        void for_each(F&& functor) {
+        template<typename Functor>
+        void for_each(Functor&& functor) {
             while (auto item = derive().next()) {
                 functor(item.take());
             }
@@ -292,13 +293,13 @@ namespace crab {
             using ValueType = typename ContainerType::value_type;
         };
 
-        template<typename IterType>
-        struct IterTraits<Map<IterType>> {
+        template<typename IterType, typename Functor>
+        struct IterTraits<Map<IterType, Functor>> {
             using ValueType = typename IterTraits<IterType>::ValueType;
         };
 
-        template<typename IterType>
-        struct IterTraits<Filter<IterType>> {
+        template<typename IterType, typename Functor>
+        struct IterTraits<Filter<IterType, Functor>> {
             using ValueType = typename IterTraits<IterType>::ValueType;
         };
     }
