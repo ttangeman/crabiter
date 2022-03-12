@@ -38,9 +38,35 @@ void test_map() {
     for (int i : nums) {
         std::cout << i << " ";
     }
+
+    std::cout << "\n";
+}
+
+void test_filter_and_map() {
+    std::vector<int> nums = {1, 2, 3, 4};
+    
+    for (int i : nums) {
+        std::cout << i << " ";
+    }
+
+    std::cout << "\n";
+
+    crab::iter(nums)
+    .filter([](int i) { 
+        return i % 2 == 0; 
+    })
+    .map([](int i) { 
+        return i * 2; 
+    })
+    .for_each([](int i) {
+        std::cout << i << " ";
+    });
+
+    std::cout << "\n";
 }
 
 int main(void) {
     test_filter();
     test_map();
+    test_filter_and_map();
 }

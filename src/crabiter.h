@@ -73,12 +73,12 @@ namespace crab {
     public:
         using ValueType = typename IterType::ValueType;
 
-        Map(IterType iter, std::function<ValueType(ValueType const&)>&& functor) 
+        Map(IterType iter, std::function<ValueType(ValueType&&)>&& functor) 
             : m_iter(iter), map(std::move(functor)) {}
 
         Optional<ValueType> next() {
             if (auto item = m_iter.next()) {
-                return map(item.value());
+                return map(item.take());
             } else {
                 return {};
             }
@@ -86,7 +86,7 @@ namespace crab {
 
     private:
         IterType m_iter;
-        std::function<ValueType(ValueType const&)> map;
+        std::function<ValueType(ValueType&&)> map;
     };
 
     template<typename IterType>
@@ -115,7 +115,7 @@ namespace crab {
     struct Adapter {
         using ValueType = typename detail::IterTraits<DerivedType>::ValueType;        
 
-        Map<DerivedType> map(std::function<ValueType(ValueType const&)>&& functor) {
+        Map<DerivedType> map(std::function<ValueType(ValueType&&)>&& functor) {
             return Map<DerivedType> {
                 derive(), std::move(functor)
             };
@@ -127,13 +127,20 @@ namespace crab {
             };
         }
 
+        template<typename F>
+        void for_each(F&& functor) {
+            while (auto item = derive().next()) {
+                functor(item.take());
+            }
+        }
+
         std::vector<ValueType> collect() {
             std::vector<ValueType> result;  
             // TODO: Is this a worthwhile micro-optimization?     
             result.reserve(1024);
 
             while (auto item = derive().next()) {
-                result.push_back(item.value());
+                result.push_back(item.take());
             }
 
             result.shrink_to_fit();
