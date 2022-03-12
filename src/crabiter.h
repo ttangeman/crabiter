@@ -44,8 +44,8 @@ namespace crab {
         }    
 
     private:
-        ContainerType::const_iterator m_begin;
-        ContainerType::const_iterator m_end;
+        typename ContainerType::const_iterator m_begin;
+        typename ContainerType::const_iterator m_end;
     };
 
     template<typename ContainerType>
@@ -64,8 +64,8 @@ namespace crab {
         }    
 
     private:
-        ContainerType::iterator m_begin;
-        ContainerType::iterator m_end;
+        typename ContainerType::iterator m_begin;
+        typename ContainerType::iterator m_end;
     };
 
     template<typename IterType>
