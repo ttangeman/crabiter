@@ -116,14 +116,14 @@ namespace crab {
 
         template<typename Functor>
         Map<DerivedType, Functor> map(Functor&& functor) {
-            return Map {
+            return Map<DerivedType, Functor> {
                 derive(), std::forward<Functor>(functor)
             };
         }
 
         template<typename Functor>
         Filter<DerivedType, Functor> filter(Functor&& functor) {
-            return Filter {
+            return Filter<DerivedType, Functor> {
                 derive(), std::forward<Functor>(functor)
             };
         }
