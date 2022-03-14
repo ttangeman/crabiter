@@ -127,6 +127,17 @@ namespace crab {
                 derive(), std::forward<Functor>(functor)
             };
         }
+        
+        Optional<ValueType> nth(size_t n) {
+            size_t count = 0;
+            while (auto item = derive().next()) {
+                if (count == n) {
+                    return std::move(item);
+                }
+                count++;
+            }
+            return {};            
+        }
 
         template<typename Functor>
         void for_each(Functor&& functor) {

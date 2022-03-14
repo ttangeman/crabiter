@@ -65,8 +65,19 @@ void test_filter_and_map() {
     std::cout << "\n";
 }
 
+void test_nth() {
+    std::vector<int> nums = {1, 2, 3, 4};
+    
+    auto iter = crab::iter(nums);
+    std::cout << iter.nth(0).value() << " ";
+    std::cout << iter.nth(0).value() << " ";
+    std::cout << iter.nth(0).value() << " ";
+    std::cout << iter.nth(0).value() << "\n";
+}
+
 int main(void) {
     test_filter();
     test_map();
     test_filter_and_map();
+    test_nth();
 }
