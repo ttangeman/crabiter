@@ -75,9 +75,20 @@ void test_nth() {
     std::cout << iter.nth(0).value() << "\n";
 }
 
+void test_enumerate() {
+    std::vector<int> nums = {1, 2, 3, 4};
+
+    auto iter = crab::iter(nums).enumerate();
+
+    while (auto pair = iter.next()) {
+        std::cout << pair.index << ": " << pair.data.value() << "\n";
+    }
+}
+
 int main(void) {
     test_filter();
     test_map();
     test_filter_and_map();
     test_nth();
+    test_enumerate();
 }

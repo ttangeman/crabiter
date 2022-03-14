@@ -13,6 +13,7 @@ namespace crab {
     template<typename DerivedType> struct Adapter;
     template<typename IterType, typename Functor> class Map;
     template<typename IterType, typename Functor> class Filter;
+    template<typename IterType> class Enumerate;
 
     template<typename ContainerType> class Iterator;
     template<typename ContainerType> class IntoIterator;
@@ -110,6 +111,33 @@ namespace crab {
         Functor filter;
     };
 
+    template<typename IterType>
+    class Enumerate : public Adapter<Enumerate<IterType>> {
+    public:
+        using ValueType = typename IterType::ValueType;
+
+        struct EnumPair {        
+            explicit operator bool() const { 
+                return data.has_value(); 
+            }
+
+            size_t index;
+            Optional<ValueType> data;
+        };
+
+        Enumerate(IterType iter) : m_iter(iter) {}
+
+        EnumPair next() {
+            return EnumPair {
+                m_index++, m_iter.next()
+            };
+        }
+
+    private:
+        IterType m_iter;
+        size_t m_index{0};
+    };
+
     template<typename DerivedType>
     struct Adapter {
         using ValueType = typename detail::IterTraits<DerivedType>::ValueType;        
@@ -125,6 +153,12 @@ namespace crab {
         Filter<DerivedType, Functor> filter(Functor&& functor) {
             return Filter<DerivedType, Functor> {
                 derive(), std::forward<Functor>(functor)
+            };
+        }
+
+        Enumerate<DerivedType> enumerate() {
+            return Enumerate<DerivedType> {
+                derive()
             };
         }
         
@@ -327,6 +361,11 @@ namespace crab {
 
         template<typename IterType, typename Functor>
         struct IterTraits<Filter<IterType, Functor>> {
+            using ValueType = typename IterTraits<IterType>::ValueType;
+        };
+
+        template<typename IterType>
+        struct IterTraits<Enumerate<IterType>> {
             using ValueType = typename IterTraits<IterType>::ValueType;
         };
     }
