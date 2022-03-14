@@ -86,7 +86,7 @@ namespace crab {
     private:
         IterType m_iter;
         Functor map;
-    };
+    };    
 
     template<typename IterType, typename Functor>
     class Filter : public Adapter<Filter<IterType, Functor>> {
@@ -137,13 +137,29 @@ namespace crab {
                 count++;
             }
             return {};            
-        }
+        }       
+
+        Optional<ValueType> last() {
+            Optional<ValueType> last_item;
+            while (auto item = derive().next()) {
+                last_item = std::move(item);
+            }
+            return last_item;
+        } 
 
         template<typename Functor>
         void for_each(Functor&& functor) {
             while (auto item = derive().next()) {
                 functor(item.take());
             }
+        }
+
+        size_t count() {
+            size_t count = 0;
+            while (derive().next()) {
+                count++:
+            }
+            return count;
         }
 
         std::vector<ValueType> collect() {
